@@ -9,14 +9,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cheerio": "^1.0.0-rc.2",
     "file-type": "^8.0.0",
     "gulp": "^4.0.0",
+    "gulp-cheerio": "^0.6.3",
     "gulp-clean": "^0.4.0",
+    "gulp-cli": "^2.0.1",
     "gulp-file": "^0.4.0",
-    "gulp-footer": "^2.0.1",
+    "gulp-prompt": "^1.0.1",
     "gulp-resources": "^0.5.0",
-    "gulp-rev": "^8.1.1",
-    "time-stamp": "^2.0.0"
+    "time-stamp": "^2.0.0",
+    "yargs": "^11.0.0"
   },
   "dependencies": {
     "simplecrawler": "^1.1.6"

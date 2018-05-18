@@ -1,73 +1,66 @@
 var gulp = require('gulp'),
 resources = require('gulp-resources');
 var Crawler = require('simplecrawler');
-var footer = require('gulp-footer');
 var clean = require('gulp-clean');
 newfile           = require('gulp-file');
 timestamp           = require('time-stamp');
 prompt           = require('gulp-prompt');
 
 fs = require('fs');
-fileType = require('file-type');
 
 
-
+var lastUrl = "";
 gulp.task('resources', function(cb) {
+      var argv = require('yargs').argv;
+      var url= argv.url;
 
-
-   gulp.src('gulpfile.js')
-   .pipe(prompt.prompt({
-      type: 'input',
-      name: 'url',
-      message: 'What URL do you want to crawl?'
-   }, function(res){
-
-
-      var logfile = encodeURIComponent(res.url.replace("https:\\\\", "").replace("http:\\\\", ""))+"/result-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
-      newfile(logfile, "").pipe(gulp.dest('/wamp64/www/bluehouse.de/getresources/'));
-      var crawler = Crawler(res.url);
+      var logfile = "./"+encodeURIComponent(url.replace(/(^\w+:|^)\/\//, ''))+"-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
+      fs.writeFile(logfile, '', cb);
+      fs.appendFile(logfile, "HOST;URL;TYPE;REF LASTURL;REF\r\n", function (err) { if (err) throw err; });
+      var crawler = Crawler(url);
+      const cheerio = require('cheerio')
+      crawler.interval=10;
+      crawler.parseHTMLComments=false;
+      crawler.filterByDomain=false;
+      crawler.timeout=100000;
+      crawler.addFetchCondition(function(queueItem, referrerQueueItem, callback) {
+          callback(null, referrerQueueItem.host === crawler.host);
+      });
       crawler.on("invaliddomain", function(queueItem, responseBuffer, response) {
-
-         if (queueItem.url.indexOf("/Fluid/ViewHelpers") !== -1 ||
-         queueItem.url.indexOf("http://typo3.org/") !== -1 ||
-         queueItem.url.indexOf("http://www.w3.org") !== -1 ||
-         queueItem.url.indexOf("http://typo3.org/") !== -1 ||
-         queueItem.url.indexOf("http://typo3.org/") !== -1 ||
-         queueItem.url.indexOf("http://typo3.org/") !== -1 ||
-         queueItem.url.indexOf("http://typo3.org/") !== -1
-
-      ){
-
-         }else{
-            fs.readFile(logfile, function (err, data) {
-              if (err) throw err;
-              if(data.indexOf(queueItem.url) >= 0){
-
-              }else{
-                console.log("--- External: %s (%d bytes) ", queueItem.url);
-                var filetype= "unbekannt";
-                if (queueItem.url.indexOf(".js") !== -1){ filetype = "Javascript"; }
-                if (queueItem.url.indexOf(".css") !== -1){ filetype = "CSS"; }
-                fs.appendFile(logfile, queueItem.host+";"+queueItem.url+"\r\n", function (err) {
-                    if (err) throw err;
-                });
-             }
-            });
-         }
-
-
+        console.log("(Invalid Domain)");
       });
       crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
-      	console.log("Internal: %s (%d bytes) ", queueItem.url);
+        var type = queueItem.stateData.contentType.replace("; charset=utf-8", "");
+        if (queueItem.url.indexOf(url) !== -1){
+          console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
+        }else{
+
+          fs.readFile(logfile, function (err, data) {
+            if (err) throw err;
+            if(data.indexOf(queueItem.url) >= 0){
+              console.log('\x1b[32m', "External, already found: ", queueItem.url+" Type: ", type);
+            }else{
+              console.log('\x1b[32m', "External: ", queueItem.url+" Type: ", type);
+              var filetype= "unbekannt";
+              if (type == "text/html"){
+                // console.log(queueItem);
+              }
+              fs.appendFile(logfile, queueItem.host+";"+queueItem.url+";"+type+";"+lastUrl+queueItem.referrer+";"+"\r\n", function (err) {
+                  if (err) throw err;
+              });
+           }
+          });
+        }
+        if(queueItem.url.indexOf("charset=utf-8") >= 0
+        || queueItem.url.indexOf("encoding=utf-8") >= 0
+        || queueItem.url.indexOf("charset=UTF-8") >= 0){
+        }else{
+          lastUrl = queueItem.url;
+        }
       });
       crawler.on("complete", function(queueItem, responseBuffer, response) {
-         console.log("COMPLETE!");
+         console.log('\x1b[45m', "Saved results to "+logfile);
 
       });
       crawler.start();
-
-
-
-   }));
-
 });
