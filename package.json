@@ -1,0 +1,24 @@
+{
+  "name": "getresources",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "file-type": "^8.0.0",
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0",
+    "gulp-file": "^0.4.0",
+    "gulp-footer": "^2.0.1",
+    "gulp-resources": "^0.5.0",
+    "gulp-rev": "^8.1.1",
+    "time-stamp": "^2.0.0"
+  },
+  "dependencies": {
+    "simplecrawler": "^1.1.6"
+  }
+}
