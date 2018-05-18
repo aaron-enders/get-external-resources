@@ -23,6 +23,7 @@ gulp.task('resources', function(cb) {
       crawler.parseHTMLComments=false;
       crawler.filterByDomain=false;
       crawler.timeout=100000;
+      crawler.maxResourceSize=5777216;
       crawler.addFetchCondition(function(queueItem, referrerQueueItem, callback) {
           callback(null, referrerQueueItem.host === crawler.host);
       });
@@ -30,7 +31,12 @@ gulp.task('resources', function(cb) {
         console.log("(Invalid Domain)");
       });
       crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
-        var type = queueItem.stateData.contentType.replace("; charset=utf-8", "");
+        if (queueItem.stateData.contentType){
+          var type = queueItem.stateData.contentType.replace("; charset=utf-8", "").replace("charset=UTF-8", "");
+        }else{
+          var type = "(undefined)";
+        }
+
         if (queueItem.url.indexOf(url) !== -1){
           console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
         }else{
@@ -41,11 +47,10 @@ gulp.task('resources', function(cb) {
               console.log('\x1b[32m', "External, already found: ", queueItem.url+" Type: ", type);
             }else{
               console.log('\x1b[32m', "External: ", queueItem.url+" Type: ", type);
-              var filetype= "unbekannt";
               if (type == "text/html"){
                 // console.log(queueItem);
               }
-              fs.appendFile(logfile, queueItem.host+";"+queueItem.url+";"+type+";"+lastUrl+queueItem.referrer+";"+"\r\n", function (err) {
+              fs.appendFile(logfile, queueItem.host+";"+queueItem.url+";"+type+";"+lastUrl+";"+queueItem.referrer+";"+"\r\n", function (err) {
                   if (err) throw err;
               });
            }
@@ -59,7 +64,7 @@ gulp.task('resources', function(cb) {
         }
       });
       crawler.on("complete", function(queueItem, responseBuffer, response) {
-         console.log('\x1b[45m', "Saved results to "+logfile);
+         console.log('\x1b[35m', "Saved results to "+logfile);
 
       });
       crawler.start();
