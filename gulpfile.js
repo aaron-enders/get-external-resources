@@ -33,7 +33,9 @@ gulp.task('resources', function(cb) {
           type = queueItem.stateData.contentType.split(';')[0];
         }
         if (queueItem.url.indexOf(url) !== -1 || (argv.domainexclude != "undefined" && queueItem.host.indexOf(argv.domainexclude)  !== -1)){
-          console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
+           if (argv.hideinternal != "yes"){
+             console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
+          }
         }else{
 
           fs.readFile(logfile, function (err, data) {
