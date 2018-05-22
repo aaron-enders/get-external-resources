@@ -14,7 +14,7 @@ gulp.task('resources', function(cb) {
       fs.writeFile(logfile, '', cb);
       fs.appendFile(logfile, "HOST;URL;TYPE;REF LASTURL;REF\r\n", function (err) { if (err) throw err; });
       var crawler = Crawler(url);
-      const cheerio = require('cheerio')
+      var cheerio = require('cheerio');
       crawler.interval=10;
       crawler.parseHTMLComments=false;
       crawler.filterByDomain=false;
@@ -27,10 +27,9 @@ gulp.task('resources', function(cb) {
         console.log("(Invalid Domain)");
       });
       crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
+         var type = "(undefined)";
         if (queueItem.stateData.contentType){
-          var type = queueItem.stateData.contentType.split(';')[0];
-        }else{
-          var type = "(undefined)";
+          type = queueItem.stateData.contentType.split(';')[0];
         }
         if (queueItem.url.indexOf(url) !== -1){
           console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
@@ -38,7 +37,7 @@ gulp.task('resources', function(cb) {
 
           fs.readFile(logfile, function (err, data) {
             if (err) throw err;
-            if(data.indexOf(queueItem.url) >= 0){
+            if(data.indexOf(queueItem.url) >= 0){ // If already in Log-File
               console.log('\x1b[33m', "External: ", "("+type+") "+queueItem.url);
             }else{
               console.log('\x1b[32m', "External: ", "("+type+") "+queueItem.url);
@@ -52,10 +51,7 @@ gulp.task('resources', function(cb) {
             }
           });
         }
-        if(queueItem.url.indexOf("charset=utf-8") >= 0
-        || queueItem.url.indexOf("encoding=utf-8") >= 0
-        || queueItem.url.indexOf("charset=UTF-8") >= 0
-        || queueItem.url.indexOf("charset=UTF-8") >= 0){
+        if(queueItem.url.indexOf("charset=utf-8") >= 0 || queueItem.url.indexOf("encoding=utf-8") >= 0 || queueItem.url.indexOf("charset=UTF-8") >= 0 || queueItem.url.indexOf("charset=UTF-8") >= 0){
         }else{
           lastUrl = queueItem.url;
         }
