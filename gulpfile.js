@@ -10,13 +10,14 @@ var lastUrl = "";
 var ora = require('ora');
 
 gulp.task('resources', function(cb) {
-
+      var foundresources = 0;
       var argv = require('yargs').argv;
       var url= argv.url;
       var spinner = new ora({
-      	text: 'Searching '+url,
-      	spinner: 'dots2'
+      	text: '',
+      	spinner: { interval: 80,  frames: ["⣾","⣽","⣻","⢿","⡿","⣟","⣯","⣷"]}
       }).start();
+      spinner.color = 'yellow';
       var domainexclude = argv.domainexclude;
       var logfile = "./"+encodeURIComponent(url.replace(/(^\w+:|^)\/\//, ''))+"-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
       fs.writeFile(logfile, '', cb);
@@ -35,13 +36,14 @@ gulp.task('resources', function(cb) {
         console.log("(Invalid Domain)");
       });
       crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
-         spinner.text = '';
+         foundresources++;
+         spinner.text = 'Found '+foundresources+" resources | "+lastUrl.slice(0, 60);
          var type = "(undefined)";
         if (queueItem.stateData.contentType){
           type = queueItem.stateData.contentType.split(';')[0];
         }
         if (queueItem.url.indexOf(url) !== -1 || (argv.domainexclude != "undefined" && queueItem.host.indexOf(argv.domainexclude)  !== -1)){
-           if (argv.hideinternal != "yes"){
+           if (argv.showinternal == "yes"){
              spinner.clear();
              console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
           }
@@ -51,14 +53,15 @@ gulp.task('resources', function(cb) {
             if (err) throw err;
             if(data.indexOf(queueItem.url) >= 0){ // If already in Log-File
                spinner.clear();
-              console.log('\x1b[33m', "External: ", "("+type+") "+queueItem.url);
+              console.log("\x1b[30m", "External: ", "("+type+") "+queueItem.url);
             }else{
                spinner.clear();
-              console.log('\x1b[32m', "External: ", "("+type+") "+queueItem.url);
+               if (type == "text/html"){ color = "\x1b[36m"; }
+              if (type == "text/javascript"){ color = '\x1b[32m'; }
+              if (type == "text/css"){ color = '\x1b[32m'; }
+              console.log(color, "External: ", "("+type+") "+queueItem.url);
               var filetype= "unbekannt";
-              if (type == "text/html"){
-                // console.log(queueItem);
-              }
+
               fs.appendFile(logfile, queueItem.host+";"+queueItem.url+";"+type+";"+lastUrl+";"+queueItem.referrer+""+"\r\n", function (err) {
                   if (err) throw err;
               });
