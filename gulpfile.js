@@ -7,9 +7,16 @@ var timestamp           = require('time-stamp');
 var prompt           = require('gulp-prompt');
 var fs = require('fs');
 var lastUrl = "";
+var ora = require('ora');
+
 gulp.task('resources', function(cb) {
+
       var argv = require('yargs').argv;
       var url= argv.url;
+      var spinner = new ora({
+      	text: 'Searching '+url,
+      	spinner: 'dots2'
+      }).start();
       var domainexclude = argv.domainexclude;
       var logfile = "./"+encodeURIComponent(url.replace(/(^\w+:|^)\/\//, ''))+"-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
       fs.writeFile(logfile, '', cb);
@@ -28,12 +35,14 @@ gulp.task('resources', function(cb) {
         console.log("(Invalid Domain)");
       });
       crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
+         spinner.text = '';
          var type = "(undefined)";
         if (queueItem.stateData.contentType){
           type = queueItem.stateData.contentType.split(';')[0];
         }
         if (queueItem.url.indexOf(url) !== -1 || (argv.domainexclude != "undefined" && queueItem.host.indexOf(argv.domainexclude)  !== -1)){
            if (argv.hideinternal != "yes"){
+             spinner.clear();
              console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
           }
         }else{
@@ -41,8 +50,10 @@ gulp.task('resources', function(cb) {
           fs.readFile(logfile, function (err, data) {
             if (err) throw err;
             if(data.indexOf(queueItem.url) >= 0){ // If already in Log-File
+               spinner.clear();
               console.log('\x1b[33m', "External: ", "("+type+") "+queueItem.url);
             }else{
+               spinner.clear();
               console.log('\x1b[32m', "External: ", "("+type+") "+queueItem.url);
               var filetype= "unbekannt";
               if (type == "text/html"){
@@ -60,7 +71,8 @@ gulp.task('resources', function(cb) {
         }
       });
       crawler.on("complete", function(queueItem, responseBuffer, response) {
-         console.log('\x1b[35m', "Saved results to "+logfile);
+         spinner.succeed("Saved results to "+logfile);
+         // console.log('\x1b[35m', "Saved results to "+logfile);
       });
       crawler.start();
 });
