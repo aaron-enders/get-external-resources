@@ -10,6 +10,7 @@ var lastUrl = "";
 gulp.task('resources', function(cb) {
       var argv = require('yargs').argv;
       var url= argv.url;
+      var domainexclude = argv.domainexclude;
       var logfile = "./"+encodeURIComponent(url.replace(/(^\w+:|^)\/\//, ''))+"-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
       fs.writeFile(logfile, '', cb);
       fs.appendFile(logfile, "HOST;URL;TYPE;REF LASTURL;REF\r\n", function (err) { if (err) throw err; });
@@ -31,7 +32,7 @@ gulp.task('resources', function(cb) {
         if (queueItem.stateData.contentType){
           type = queueItem.stateData.contentType.split(';')[0];
         }
-        if (queueItem.url.indexOf(url) !== -1){
+        if (queueItem.url.indexOf(url) !== -1 || (argv.domainexclude != "undefined" && queueItem.host.indexOf(argv.domainexclude)  !== -1)){
           console.log('\x1b[36m%s\x1b[0m', "Internal: ", queueItem.url);
         }else{
 
