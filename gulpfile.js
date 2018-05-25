@@ -50,7 +50,7 @@ function crawl(url, domainexclude, showinternal, cb){
 
    var logfile = "./"+encodeURIComponent(url.replace(/(^\w+:|^)\/\//, ''))+"-"+timestamp("YYYY-MM-DD-mm-ss")+".csv";
    fs.writeFile(logfile, '', cb);
-   fs.appendFile(logfile, "HOST;URL;TYPE;REF LASTURL;REF\r\n", function (err) { if (err) throw err; });
+   fs.appendFile(logfile, "URL;TYPE;REF LASTURL;REF\r\n", function (err) { if (err) throw err; });
    var crawler = Crawler(url);
    var cheerio = require('cheerio');
    crawler.interval=10;
@@ -91,7 +91,7 @@ function crawl(url, domainexclude, showinternal, cb){
            console.log(color, "External: ", "("+type+") "+queueItem.url);
            var filetype= "unbekannt";
 
-           fs.appendFile(logfile, queueItem.host+";"+queueItem.url+";"+type+";"+lastUrl+";"+queueItem.referrer+""+"\r\n", function (err) {
+           fs.appendFile(logfile, queueItem.url+";"+type+";"+lastUrl+";"+queueItem.referrer+""+"\r\n", function (err) {
                if (err) throw err;
            });
          }
