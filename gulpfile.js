@@ -86,8 +86,9 @@ function crawl(url, domainexclude, showinternal, cb){
          }else{
             spinner.clear();
             if (type == "text/html"){ color = "\x1b[36m"; }
-           if (type == "text/javascript"){ color = '\x1b[32m'; }
-           if (type == "text/css"){ color = '\x1b[32m'; }
+           else if (type == "text/javascript"){ color = '\x1b[32m'; }
+           else if (type == "text/css"){ color = '\x1b[32m'; }
+           else { color = '\x1b[37m'; }
            console.log(color, "External: ", "("+type+") "+queueItem.url);
            var filetype= "unbekannt";
 
